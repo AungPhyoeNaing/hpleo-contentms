@@ -1,0 +1,58 @@
+{% extends 'videos/base.html' %}
+{% load i18n %}
+
+{% block content %}
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+        {% for video in videos %}
+        <div class="group relative bg-gray-900 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 shadow-lg cursor-pointer">
+            <a href="{% url 'video_detail' video.id %}">
+                <!-- Thumbnail -->
+                <div class="aspect-w-16 aspect-h-9 relative">
+                    <img src="{{ video.thumbnail_url|default:'https://via.placeholder.com/640x360?text=No+Image' }}" 
+                         alt="{{ video.title }}" 
+                         class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                         loading="lazy">
+                    <!-- Play Icon Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div class="bg-primary/90 rounded-full p-2">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info -->
+                <div class="p-3">
+                    <h3 class="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                        {{ video.title }}
+                    </h3>
+                    <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
+                        <span>{{ video.category.name|default:"Uncategorized" }}</span>
+                        <span>{{ video.updated_at|date:"M d" }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-20 text-gray-500">
+            <p class="text-xl">{% trans "No videos found." %}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="mt-12 flex justify-center space-x-2">
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700">{% trans "Previous" %}</a>
+        {% endif %}
+        
+        <span class="px-4 py-2 text-gray-400">
+            {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700">{% trans "Next" %}</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% endblock %}
