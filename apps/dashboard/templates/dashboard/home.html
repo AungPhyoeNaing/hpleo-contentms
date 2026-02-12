@@ -1,0 +1,102 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<h2 class="text-2xl font-bold mb-6">Dashboard Overview</h2>
+
+<!-- Stats Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-card p-6 rounded-lg shadow border border-gray-700">
+        <h3 class="text-gray-400 text-sm font-medium uppercase">Total Videos</h3>
+        <p class="text-3xl font-bold text-white mt-2">{{ total_videos }}</p>
+    </div>
+    <div class="bg-card p-6 rounded-lg shadow border border-gray-700">
+        <h3 class="text-gray-400 text-sm font-medium uppercase">Categories</h3>
+        <p class="text-3xl font-bold text-white mt-2">{{ total_categories }}</p>
+    </div>
+    <div class="bg-card p-6 rounded-lg shadow border border-gray-700">
+        <h3 class="text-gray-400 text-sm font-medium uppercase">Last Sync</h3>
+        <p class="text-xl font-bold text-white mt-2">
+            {% if last_success %}
+                {{ last_success.finished_at|timesince }} ago
+            {% else %}
+                Never
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="mb-8 p-6 bg-card rounded-lg border border-gray-700 flex items-center justify-between">
+    <div>
+        <h3 class="text-lg font-bold">Quick Actions</h3>
+        <p class="text-gray-400 text-sm">Trigger a manual sync of the latest content (Page 1).</p>
+    </div>
+    <div class="flex items-center gap-4">
+        <span id="import-status" class="text-sm"></span>
+        <form hx-post="{% url 'dashboard_trigger_import' %}" 
+              hx-target="#import-status" 
+              hx-indicator="#loading"
+              class="flex items-center gap-2">
+            {% csrf_token %}
+            <select name="pages" class="bg-gray-800 text-white text-sm rounded px-2 py-2 border border-gray-700 focus:outline-none focus:border-blue-500">
+                <option value="1">1 Page (~20 videos)</option>
+                <option value="5">5 Pages (~100 videos)</option>
+                <option value="10">10 Pages (~200 videos)</option>
+                <option value="20">20 Pages (~400 videos)</option>
+            </select>
+            <button type="submit" 
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
+                Sync Now
+            </button>
+        </form>
+        <span id="loading" class="htmx-indicator text-blue-400">Syncing...</span>
+    </div>
+</div>
+
+<!-- Recent Logs -->
+<div class="bg-card rounded-lg border border-gray-700 overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-700">
+        <h3 class="font-bold">Recent Import Logs</h3>
+    </div>
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs text-gray-500 uppercase bg-gray-900">
+            <tr>
+                <th class="px-6 py-3">Started</th>
+                <th class="px-6 py-3">Status</th>
+                <th class="px-6 py-3">Success</th>
+                <th class="px-6 py-3">Fail</th>
+                <th class="px-6 py-3">Duration</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for log in recent_logs %}
+            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800">
+                <td class="px-6 py-4">{{ log.started_at|date:"M d H:i" }}</td>
+                <td class="px-6 py-4">
+                    {% if log.status == 'completed' %}
+                        <span class="bg-green-900 text-green-300 py-1 px-2 rounded-full text-xs">Completed</span>
+                    {% elif log.status == 'failed' %}
+                        <span class="bg-red-900 text-red-300 py-1 px-2 rounded-full text-xs">Failed</span>
+                    {% else %}
+                        <span class="bg-yellow-900 text-yellow-300 py-1 px-2 rounded-full text-xs">{{ log.status }}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-green-400 font-mono">{{ log.success_count }}</td>
+                <td class="px-6 py-4 text-red-400 font-mono">{{ log.fail_count }}</td>
+                <td class="px-6 py-4">
+                    {% if log.finished_at %}
+                        {{ log.finished_at|timeuntil:log.started_at }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="px-6 py-8 text-center">No logs found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

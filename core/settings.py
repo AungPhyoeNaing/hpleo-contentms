@@ -58,7 +58,11 @@ ROOT_URLCONF = 'core.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'], # Added global templates dir
+        'DIRS': [
+            BASE_DIR / 'templates',
+            BASE_DIR / 'apps/dashboard/templates', # Explicitly added to fix discovery issue
+            BASE_DIR / 'apps/videos/templates',    # Explicitly added to fix discovery issue
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

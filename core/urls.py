@@ -24,5 +24,6 @@ urlpatterns = [
 
 urlpatterns += i18n_patterns(
     path('admin/', admin.site.urls),
+    path('dashboard/', include('apps.dashboard.urls')),
     path('', include('apps.videos.urls')),
 )

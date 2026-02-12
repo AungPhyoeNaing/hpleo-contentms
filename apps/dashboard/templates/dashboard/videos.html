@@ -1,0 +1,65 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Manage Videos</h2>
+    <form class="flex gap-2">
+        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search title..." 
+               class="bg-gray-800 border-gray-700 text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+        <button type="submit" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white text-sm">Search</button>
+    </form>
+</div>
+
+<div class="bg-card rounded-lg border border-gray-700 overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs text-gray-500 uppercase bg-gray-900">
+            <tr>
+                <th class="px-6 py-3">Thumbnail</th>
+                <th class="px-6 py-3">Title</th>
+                <th class="px-6 py-3">Category</th>
+                <th class="px-6 py-3">Ext ID</th>
+                <th class="px-6 py-3">Updated</th>
+                <th class="px-6 py-3">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for video in videos %}
+            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800">
+                <td class="px-6 py-4">
+                    {% if video.thumbnail_url %}
+                    <img src="{{ video.thumbnail_url }}" class="h-10 w-16 object-cover rounded bg-gray-900">
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 font-medium text-white max-w-xs truncate" title="{{ video.title }}">
+                    {{ video.title }}
+                </td>
+                <td class="px-6 py-4">{{ video.category.name|default:"-" }}</td>
+                <td class="px-6 py-4 font-mono text-xs">{{ video.external_id }}</td>
+                <td class="px-6 py-4">{{ video.updated_at|date:"M d H:i" }}</td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'admin:videos_video_change' video.id %}" target="_blank" 
+                       class="text-blue-400 hover:underline">Edit</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="px-6 py-8 text-center">No videos found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="mt-4 flex justify-center space-x-2">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 text-sm">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 text-gray-500 text-sm">Page {{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 text-sm">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}
