@@ -4,14 +4,14 @@
 {% block title %}{{ video.title }} - Video CMS{% endblock %}
 
 {% block content %}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
     
     <!-- Left Column: Player & Info -->
     <div class="lg:col-span-2">
         <!-- Player Container -->
         <div class="aspect-w-16 aspect-h-9 bg-black rounded-lg overflow-hidden shadow-2xl relative">
             {% if current_episode %}
-                <video id="videoPlayer" class="w-full h-full" controls poster="{{ video.thumbnail_url }}"></video>
+                <video id="player" class="w-full h-full" controls crossorigin playsinline poster="{{ video.thumbnail_url }}"></video>
             {% else %}
                 <div class="flex items-center justify-center h-full text-gray-500">
                     {% trans "No playable episodes found." %}
@@ -20,11 +20,11 @@
         </div>
 
         <!-- Video Info -->
-        <div class="mt-6">
-            <h1 class="text-2xl md:text-3xl font-bold text-white mb-2">{{ video.title }}</h1>
-            <div class="flex items-center space-x-4 text-sm text-gray-400 mb-4">
+        <div class="mt-4 md:mt-6">
+            <h1 class="text-xl md:text-3xl font-bold text-white mb-2 leading-tight">{{ video.title }}</h1>
+            <div class="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm text-gray-400 mb-4">
                 <span class="bg-gray-800 px-2 py-1 rounded">{{ video.category.name }}</span>
-                <span>{{ video.updated_at|date:"F j, Y" }}</span>
+                <span>{{ video.updated_at|date:"M d, Y" }}</span>
                 <span class="flex items-center">
                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                     {{ video.views|default:0 }} {% trans "views" %}
@@ -37,19 +37,19 @@
     </div>
 
     <!-- Right Column: Episodes & Related -->
-    <div class="space-y-8">
+    <div class="space-y-6 md:space-y-8">
         <!-- Episodes List -->
         {% if episodes %}
         <div class="bg-gray-900 rounded-lg p-4">
-            <h3 class="text-lg font-semibold mb-4 border-b border-gray-700 pb-2">{% trans "Episodes" %}</h3>
-            <div class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto no-scrollbar">
+            <h3 class="text-base md:text-lg font-semibold mb-3 border-b border-gray-700 pb-2">{% trans "Episodes" %}</h3>
+            <div class="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-2 max-h-60 overflow-y-auto no-scrollbar">
                 {% for ep in episodes %}
                 <a href="?ep={{ ep.id }}" 
-                   class="block text-center px-2 py-2 rounded text-sm truncate transition-colors
+                   class="block text-center px-1 py-2 rounded text-xs md:text-sm truncate transition-colors border border-transparent
                           {% if current_episode.id == ep.id %}
-                          bg-primary text-white font-bold
+                          bg-primary text-white font-bold border-primary
                           {% else %}
-                          bg-gray-800 text-gray-300 hover:bg-gray-700
+                          bg-gray-800 text-gray-300 hover:bg-gray-700 hover:border-gray-600
                           {% endif %}">
                     {{ ep.label }}
                 </a>
@@ -60,8 +60,8 @@
 
         <!-- Related Videos -->
         <div>
-            <h3 class="text-lg font-semibold mb-4">{% trans "You may also like" %}</h3>
-            <div class="space-y-4">
+            <h3 class="text-base md:text-lg font-semibold mb-3">{% trans "You may also like" %}</h3>
+            <div class="space-y-3 md:space-y-4">
                 {% for rel in related_videos %}
                 <a href="{% url 'video_detail' rel.id %}" class="flex gap-3 group">
                     <img src="{{ rel.thumbnail_url|default:'https://via.placeholder.com/160x90' }}" 
@@ -77,27 +77,42 @@
     </div>
 </div>
 
-<!-- HLS.js Logic -->
+<!-- Plyr + HLS.js Logic -->
 {% if current_episode %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var video = document.getElementById('videoPlayer');
-        var videoSrc = "{{ current_episode.url }}";
+    document.addEventListener('DOMContentLoaded', () => {
+        const video = document.getElementById('player');
+        const source = "{{ current_episode.url }}";
         
+        // Default Plyr options
+        const defaultOptions = {
+            controls: [
+                'play-large', 'play', 'fast-forward', 'progress', 
+                'current-time', 'duration', 'mute', 'volume', 
+                'captions', 'settings', 'pip', 'airplay', 'fullscreen'
+            ],
+            settings: ['captions', 'quality', 'speed'],
+            speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] }
+        };
+
         if (Hls.isSupported()) {
-            var hls = new Hls();
-            hls.loadSource(videoSrc);
+            const hls = new Hls();
+            hls.loadSource(source);
             hls.attachMedia(video);
-            hls.on(Hls.Events.MANIFEST_PARSED, function() {
-                // Auto-play is often blocked by browsers, but we can try
-                // video.play(); 
+            
+            hls.on(Hls.Events.MANIFEST_PARSED, function (event, data) {
+                // Initialize Plyr once HLS is ready
+                new Plyr(video, defaultOptions);
             });
-        }
-        else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-            video.src = videoSrc;
-            video.addEventListener('loadedmetadata', function() {
-                // video.play();
-            });
+            
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+            // Fallback for native HLS (Safari/iOS)
+            video.src = source;
+            new Plyr(video, defaultOptions);
+        } else {
+            // Standard fallback
+            video.src = source;
+            new Plyr(video, defaultOptions);
         }
     });
 </script>

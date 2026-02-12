@@ -9,6 +9,11 @@ class VideoListView(ListView):
     context_object_name = 'videos'
     paginate_by = 24
 
+    def get_template_names(self):
+        if self.request.headers.get('HX-Request'):
+            return ['videos/partials/video_loop.html']
+        return [self.template_name]
+
     def get_queryset(self):
         queryset = super().get_queryset().select_related('category').order_by('-updated_at')
         search_query = self.request.GET.get('q')
@@ -22,6 +27,14 @@ class VideoListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = Category.objects.all().order_by('name')
+        
+        # Featured Video (Random highly viewed or latest)
+        # Optimization: Try to get one with a thumbnail
+        if not self.request.headers.get('HX-Request'):
+             context['featured_video'] = Video.objects.filter(
+                 thumbnail_url__isnull=False
+             ).order_by('-created_at').first()
+             
         return context
 
 class CategoryVideoListView(ListView):

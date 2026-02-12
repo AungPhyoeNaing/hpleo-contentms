@@ -2,57 +2,60 @@
 {% load i18n %}
 
 {% block content %}
-    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-        {% for video in videos %}
-        <div class="group relative bg-gray-900 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 shadow-lg cursor-pointer">
-            <a href="{% url 'video_detail' video.id %}">
-                <!-- Thumbnail -->
-                <div class="aspect-w-16 aspect-h-9 relative">
-                    <img src="{{ video.thumbnail_url|default:'https://via.placeholder.com/640x360?text=No+Image' }}" 
-                         alt="{{ video.title }}" 
-                         class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity"
-                         loading="lazy">
-                    <!-- Play Icon Overlay -->
-                    <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div class="bg-primary/90 rounded-full p-2">
-                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Info -->
-                <div class="p-3">
-                    <h3 class="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
-                        {{ video.title }}
-                    </h3>
-                    <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
-                        <span>{{ video.category.name|default:"Uncategorized" }}</span>
-                        <span>{{ video.updated_at|date:"M d" }}</span>
-                    </div>
-                </div>
-            </a>
+    <!-- Hero Section -->
+    {% if featured_video and not request.GET.page %}
+    <div class="mb-6 md:mb-10 relative rounded-xl md:rounded-2xl overflow-hidden shadow-2xl group h-[50vh] md:h-[400px] lg:h-[450px]">
+        <img src="{{ featured_video.thumbnail_url }}" class="object-cover w-full h-full opacity-60 group-hover:opacity-70 transition-opacity duration-700">
+        <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
+        <div class="absolute bottom-0 left-0 p-4 md:p-10 w-full md:w-2/3 lg:w-1/2">
+            <span class="inline-block px-2 py-0.5 mb-2 text-[10px] md:text-xs font-bold tracking-wider text-white uppercase bg-primary rounded-full">
+                {{ featured_video.category.name|default:"Featured" }}
+            </span>
+            <h1 class="text-xl md:text-4xl lg:text-5xl font-extrabold text-white mb-2 md:mb-4 leading-tight drop-shadow-lg">
+                {{ featured_video.title }}
+            </h1>
+            <p class="hidden md:block text-gray-200 text-sm md:text-base mb-4 md:mb-6 line-clamp-2 drop-shadow-md">
+                {{ featured_video.description|striptags|truncatechars:150 }}
+            </p>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'video_detail' featured_video.id %}" class="bg-primary hover:bg-red-700 text-white font-bold py-2 px-6 md:py-3 md:px-8 rounded-full transition transform hover:scale-105 flex items-center gap-2 text-sm md:text-base">
+                    <svg class="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    {% trans "Watch Now" %}
+                </a>
+            </div>
         </div>
-        {% empty %}
-        <div class="col-span-full text-center py-20 text-gray-500">
-            <p class="text-xl">{% trans "No videos found." %}</p>
-        </div>
-        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Video Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3 md:gap-4" id="video-grid">
+        {% include 'videos/partials/video_loop.html' %}
     </div>
 
     <!-- Pagination -->
     {% if is_paginated %}
-    <div class="mt-12 flex justify-center space-x-2">
+    <div class="mt-10 md:mt-14 flex flex-wrap justify-center items-center gap-2">
         {% if page_obj.has_previous %}
-            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700">{% trans "Previous" %}</a>
+            <a href="?page=1{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm text-gray-300 transition">&laquo; First</a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm text-gray-300 transition">Prev</a>
         {% endif %}
         
-        <span class="px-4 py-2 text-gray-400">
-            {% blocktrans with number=page_obj.number total=page_obj.paginator.num_pages %}Page {{ number }} of {{ total }}{% endblocktrans %}
+        <span class="px-3 py-2 text-gray-400 text-sm font-medium">
+            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
         </span>
 
         {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700">{% trans "Next" %}</a>
+            <a href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm text-gray-300 transition">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 rounded text-sm text-gray-300 transition">Last &raquo;</a>
         {% endif %}
     </div>
     {% endif %}
+
+    <!-- Empty State -->
+    {% if not videos %}
+    <div class="col-span-full text-center py-20 text-gray-500">
+        <p class="text-xl">{% trans "No videos found." %}</p>
+    </div>
+    {% endif %}
+
 {% endblock %}

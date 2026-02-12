@@ -1,0 +1,31 @@
+{% load i18n %}
+{% for video in videos %}
+<div class="group relative bg-gray-900 rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 shadow-lg cursor-pointer animate-fade-in">
+    <a href="{% url 'video_detail' video.id %}">
+        <!-- Thumbnail -->
+        <div class="aspect-w-16 aspect-h-9 relative bg-gray-800">
+            <img src="{{ video.thumbnail_url|default:'https://via.placeholder.com/640x360?text=No+Image' }}" 
+                 alt="{{ video.title }}" 
+                 class="w-full h-40 object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                 loading="lazy">
+            <!-- Play Icon Overlay -->
+            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div class="bg-primary/90 rounded-full p-2">
+                    <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info -->
+        <div class="p-3">
+            <h3 class="text-sm font-medium text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                {{ video.title }}
+            </h3>
+            <div class="flex justify-between items-center mt-2 text-xs text-gray-400">
+                <span>{{ video.category.name|default:"Uncategorized" }}</span>
+                <span>{{ video.views }} views</span>
+            </div>
+        </div>
+    </a>
+</div>
+{% endfor %}
