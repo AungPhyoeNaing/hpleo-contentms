@@ -1,13 +1,19 @@
 {% extends 'dashboard/base.html' %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
     <h2 class="text-2xl font-bold">Manage Videos</h2>
-    <form class="flex gap-2">
-        <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search title..." 
-               class="bg-gray-800 border-gray-700 text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
-        <button type="submit" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white text-sm">Search</button>
-    </form>
+    <div class="flex gap-2">
+        <a href="{% url 'dashboard_video_add' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add Video
+        </a>
+        <form class="flex gap-2">
+            <input type="text" name="q" value="{{ request.GET.q }}" placeholder="Search title..." 
+                   class="bg-gray-800 border-gray-700 text-white rounded px-3 py-2 text-sm focus:outline-none focus:border-blue-500">
+            <button type="submit" class="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded text-white text-sm">Search</button>
+        </form>
+    </div>
 </div>
 
 <div class="bg-card rounded-lg border border-gray-700 overflow-hidden">
@@ -20,12 +26,12 @@
                 <th class="px-6 py-3">Views</th>
                 <th class="px-6 py-3">Ext ID</th>
                 <th class="px-6 py-3">Updated</th>
-                <th class="px-6 py-3">Actions</th>
+                <th class="px-6 py-3 text-right">Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for video in videos %}
-            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800">
+            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800 group">
                 <td class="px-6 py-4">
                     {% if video.thumbnail_url %}
                     <img src="{{ video.thumbnail_url }}" class="h-10 w-16 object-cover rounded bg-gray-900">
@@ -38,14 +44,16 @@
                 <td class="px-6 py-4 font-mono">{{ video.views }}</td>
                 <td class="px-6 py-4 font-mono text-xs">{{ video.external_id }}</td>
                 <td class="px-6 py-4">{{ video.updated_at|date:"M d H:i" }}</td>
-                <td class="px-6 py-4">
-                    <a href="{% url 'admin:videos_video_change' video.id %}" target="_blank" 
-                       class="text-blue-400 hover:underline">Edit</a>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a href="{% url 'dashboard_video_edit' video.id %}" class="text-blue-400 hover:text-blue-300">Edit</a>
+                        <a href="{% url 'dashboard_video_delete' video.id %}" class="text-red-400 hover:text-red-300">Delete</a>
+                    </div>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="6" class="px-6 py-8 text-center">No videos found.</td>
+                <td colspan="7" class="px-6 py-8 text-center">No videos found.</td>
             </tr>
             {% endfor %}
         </tbody>

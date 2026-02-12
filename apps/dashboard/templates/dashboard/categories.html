@@ -1,0 +1,58 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <h2 class="text-2xl font-bold">Manage Categories</h2>
+    <a href="{% url 'dashboard_category_add' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Add Category
+    </a>
+</div>
+
+<div class="bg-card rounded-lg border border-gray-700 overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs text-gray-500 uppercase bg-gray-900">
+            <tr>
+                <th class="px-6 py-3">Name</th>
+                <th class="px-6 py-3">External ID</th>
+                <th class="px-6 py-3">Video Count</th>
+                <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800 group">
+                <td class="px-6 py-4 font-medium text-white">
+                    {{ category.name }}
+                </td>
+                <td class="px-6 py-4 font-mono text-xs">{{ category.external_id }}</td>
+                <td class="px-6 py-4">{{ category.videos.count }}</td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a href="{% url 'dashboard_category_edit' category.id %}" class="text-blue-400 hover:text-blue-300">Edit</a>
+                        <a href="{% url 'dashboard_category_delete' category.id %}" class="text-red-400 hover:text-red-300">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-6 py-8 text-center">No categories found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<div class="mt-4 flex justify-center space-x-2">
+    {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 text-sm">Prev</a>
+    {% endif %}
+    <span class="px-3 py-1 text-gray-500 text-sm">Page {{ page_obj.number }}</span>
+    {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-1 bg-gray-800 rounded hover:bg-gray-700 text-sm">Next</a>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

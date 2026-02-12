@@ -38,6 +38,9 @@
             <a href="{% url 'dashboard_videos' %}" class="block px-4 py-2 rounded hover:bg-gray-800 {% if request.resolver_match.url_name == 'dashboard_videos' %}bg-gray-800 text-white{% else %}text-gray-400{% endif %}">
                 Videos
             </a>
+            <a href="{% url 'dashboard_categories' %}" class="block px-4 py-2 rounded hover:bg-gray-800 {% if request.resolver_match.url_name == 'dashboard_categories' %}bg-gray-800 text-white{% else %}text-gray-400{% endif %}">
+                Categories
+            </a>
             <a href="{% url 'admin:index' %}" target="_blank" class="block px-4 py-2 rounded hover:bg-gray-800 text-gray-400">
                 Django Admin ↗
             </a>
