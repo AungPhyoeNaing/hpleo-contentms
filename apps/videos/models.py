@@ -19,6 +19,7 @@ class Video(models.Model):
     description = models.TextField(blank=True)
     external_id = models.IntegerField(unique=True, help_text="vod_id from external API")
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
+    views = models.PositiveIntegerField(default=0)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

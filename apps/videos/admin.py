@@ -13,10 +13,10 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Video)
 class VideoAdmin(admin.ModelAdmin):
-    list_display = ('title', 'category', 'external_id', 'created_at')
+    list_display = ('title', 'category', 'views', 'external_id', 'created_at')
     search_fields = ('title', 'external_id')
     list_filter = ('category', 'created_at')
-    readonly_fields = ('created_at', 'updated_at')
+    readonly_fields = ('created_at', 'updated_at', 'views')
     inlines = [EpisodeInline]
 
 @admin.register(Episode)

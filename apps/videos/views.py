@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView, DetailView
-from django.db.models import Q
+from django.db.models import Q, F
 from .models import Video, Category, Episode
 
 class VideoListView(ListView):
@@ -45,6 +45,14 @@ class VideoDetailView(DetailView):
     template_name = 'videos/video_detail.html'
     context_object_name = 'video'
 
+    def get_object(self, queryset=None):
+        obj = super().get_object(queryset)
+        # Atomically increment views count
+        Video.objects.filter(pk=obj.pk).update(views=F('views') + 1)
+        # Refresh from db to get the updated value
+        obj.refresh_from_db()
+        return obj
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Get episodes
@@ -53,17 +61,31 @@ class VideoDetailView(DetailView):
         
         # Determine current episode
         episode_id = self.request.GET.get('ep')
+        current_episode = None
+        
         if episode_id:
-            current_episode = episodes.filter(id=episode_id).first()
-        else:
+            try:
+                current_episode = episodes.filter(id=episode_id).first()
+            except ValueError: # Handle invalid UUID strings
+                pass
+        
+        if not current_episode:
             current_episode = episodes.first()
             
         context['current_episode'] = current_episode
         
-        # Related videos (same category)
+        # Related videos (Optimized)
         if self.object.category:
-            context['related_videos'] = Video.objects.filter(
+            # Get up to 100 IDs from the same category to sample from
+            related_ids = list(Video.objects.filter(
                 category=self.object.category
-            ).exclude(id=self.object.id).order_by('?')[:6]
+            ).exclude(id=self.object.id).values_list('id', flat=True)[:100])
+            
+            import random
+            if len(related_ids) > 6:
+                sampled_ids = random.sample(related_ids, 6)
+                context['related_videos'] = Video.objects.filter(id__in=sampled_ids)
+            else:
+                context['related_videos'] = Video.objects.filter(id__in=related_ids)
             
         return context

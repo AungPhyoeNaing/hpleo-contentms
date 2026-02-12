@@ -17,6 +17,7 @@
                 <th class="px-6 py-3">Thumbnail</th>
                 <th class="px-6 py-3">Title</th>
                 <th class="px-6 py-3">Category</th>
+                <th class="px-6 py-3">Views</th>
                 <th class="px-6 py-3">Ext ID</th>
                 <th class="px-6 py-3">Updated</th>
                 <th class="px-6 py-3">Actions</th>
@@ -34,6 +35,7 @@
                     {{ video.title }}
                 </td>
                 <td class="px-6 py-4">{{ video.category.name|default:"-" }}</td>
+                <td class="px-6 py-4 font-mono">{{ video.views }}</td>
                 <td class="px-6 py-4 font-mono text-xs">{{ video.external_id }}</td>
                 <td class="px-6 py-4">{{ video.updated_at|date:"M d H:i" }}</td>
                 <td class="px-6 py-4">
