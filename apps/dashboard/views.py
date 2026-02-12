@@ -11,7 +11,23 @@ from apps.importer.models import ImportLog, Resource
 from apps.importer.services import CaobizyImporter
 from .forms import VideoForm, CategoryForm, ResourceForm
 
+from django.contrib.auth.views import LoginView, LogoutView
+
+# ... imports ...
+
+class DashboardLoginView(LoginView):
+    template_name = 'dashboard/login.html'
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        return reverse_lazy('dashboard_home')
+
+class DashboardLogoutView(LogoutView):
+    next_page = reverse_lazy('dashboard_login')
+
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    login_url = reverse_lazy('dashboard_login')
+    
     def test_func(self):
         return self.request.user.is_staff
 

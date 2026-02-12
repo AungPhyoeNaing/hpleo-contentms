@@ -2,6 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # Auth
+    path('login/', views.DashboardLoginView.as_view(), name='dashboard_login'),
+    path('logout/', views.DashboardLogoutView.as_view(), name='dashboard_logout'),
+
     path('', views.DashboardHomeView.as_view(), name='dashboard_home'),
     
     # Resource URLs
