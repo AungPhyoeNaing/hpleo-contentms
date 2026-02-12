@@ -1,6 +1,16 @@
 from django.db import models
 import uuid
 
+class Resource(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=100, help_text="e.g. Caobizy, 188Resource")
+    url = models.URLField(help_text="The API URL (e.g. https://www.caobizy.com/api.php/provide/vod/)")
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
 class ImportLog(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     started_at = models.DateTimeField(auto_now_add=True)

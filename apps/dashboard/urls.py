@@ -4,6 +4,12 @@ from . import views
 urlpatterns = [
     path('', views.DashboardHomeView.as_view(), name='dashboard_home'),
     
+    # Resource URLs
+    path('resources/', views.ResourceManageView.as_view(), name='dashboard_resources'),
+    path('resources/add/', views.ResourceCreateView.as_view(), name='dashboard_resource_add'),
+    path('resources/<uuid:pk>/edit/', views.ResourceUpdateView.as_view(), name='dashboard_resource_edit'),
+    path('resources/<uuid:pk>/delete/', views.ResourceDeleteView.as_view(), name='dashboard_resource_delete'),
+    
     # Video URLs
     path('videos/', views.VideoManageView.as_view(), name='dashboard_videos'),
     path('videos/add/', views.VideoCreateView.as_view(), name='dashboard_video_add'),

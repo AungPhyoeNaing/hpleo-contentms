@@ -7,9 +7,9 @@ from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from asgiref.sync import async_to_sync
 from apps.videos.models import Video, Category
-from apps.importer.models import ImportLog
+from apps.importer.models import ImportLog, Resource
 from apps.importer.services import CaobizyImporter
-from .forms import VideoForm, CategoryForm
+from .forms import VideoForm, CategoryForm, ResourceForm
 
 class StaffRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self):
@@ -22,9 +22,37 @@ class DashboardHomeView(StaffRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['total_videos'] = Video.objects.count()
         context['total_categories'] = Category.objects.count()
+        context['total_resources'] = Resource.objects.filter(is_active=True).count()
+        context['resources'] = Resource.objects.filter(is_active=True)
         context['recent_logs'] = ImportLog.objects.order_by('-started_at')[:5]
         context['last_success'] = ImportLog.objects.filter(status='completed').order_by('-finished_at').first()
         return context
+
+# --- RESOURCE MANAGEMENT ---
+class ResourceManageView(StaffRequiredMixin, ListView):
+    model = Resource
+    template_name = 'dashboard/resources.html'
+    context_object_name = 'resources'
+    ordering = 'name'
+
+class ResourceCreateView(StaffRequiredMixin, CreateView):
+    model = Resource
+    form_class = ResourceForm
+    template_name = 'dashboard/resource_form.html'
+    success_url = reverse_lazy('dashboard_resources')
+    extra_context = {'title': 'Add Resource'}
+
+class ResourceUpdateView(StaffRequiredMixin, UpdateView):
+    model = Resource
+    form_class = ResourceForm
+    template_name = 'dashboard/resource_form.html'
+    success_url = reverse_lazy('dashboard_resources')
+    extra_context = {'title': 'Edit Resource'}
+
+class ResourceDeleteView(StaffRequiredMixin, DeleteView):
+    model = Resource
+    template_name = 'dashboard/confirm_delete.html'
+    success_url = reverse_lazy('dashboard_resources')
 
 # --- VIDEO MANAGEMENT ---
 class VideoManageView(StaffRequiredMixin, ListView):
@@ -92,19 +120,30 @@ def trigger_import(request):
     if not request.user.is_staff:
         return HttpResponse("Unauthorized", status=403)
     
-    # Get pages from POST data, default to 1
+    # Get pages
     try:
         pages = int(request.POST.get('pages', 1))
     except ValueError:
         pages = 1
 
-    # Run import synchronously (Note: heavy imports might timeout without Celery)
-    importer = CaobizyImporter()
+    # Get resource
+    resource_id = request.POST.get('resource_id')
+    api_url = "https://www.caobizy.com/api.php/provide/vod/" # Default fallback
+    
+    if resource_id:
+        try:
+            resource = Resource.objects.get(id=resource_id)
+            api_url = resource.url
+        except Resource.DoesNotExist:
+            pass
+
+    # Run import
+    importer = CaobizyImporter(api_url=api_url)
     try:
         log = async_to_sync(importer.run_import)(pages=pages)
         status_color = "text-green-500" if log.status == 'completed' else "text-red-500"
         return HttpResponse(
-            f"<span class='{status_color} font-bold'>Done! Scanned {pages} page(s). Added: {log.success_count}</span>"
+            f"<span class='{status_color} font-bold'>Done! Scanned {pages} page(s) from {resource.name if resource_id else 'Default'}. Added: {log.success_count}</span>"
         )
     except Exception as e:
         return HttpResponse(f"<span class='text-red-500'>Error: {str(e)}</span>")

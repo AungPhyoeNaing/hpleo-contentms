@@ -1,0 +1,49 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+    <h2 class="text-2xl font-bold">Manage Resources (APIs)</h2>
+    <a href="{% url 'dashboard_resource_add' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+        Add Resource
+    </a>
+</div>
+
+<div class="bg-card rounded-lg border border-gray-700 overflow-hidden">
+    <table class="w-full text-sm text-left text-gray-400">
+        <thead class="text-xs text-gray-500 uppercase bg-gray-900">
+            <tr>
+                <th class="px-6 py-3">Name</th>
+                <th class="px-6 py-3">API URL</th>
+                <th class="px-6 py-3">Active</th>
+                <th class="px-6 py-3 text-right">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for resource in resources %}
+            <tr class="bg-card border-b border-gray-800 hover:bg-gray-800 group">
+                <td class="px-6 py-4 font-medium text-white">{{ resource.name }}</td>
+                <td class="px-6 py-4 font-mono text-xs truncate max-w-xs" title="{{ resource.url }}">{{ resource.url }}</td>
+                <td class="px-6 py-4">
+                    {% if resource.is_active %}
+                    <span class="text-green-400">Yes</span>
+                    {% else %}
+                    <span class="text-gray-500">No</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <a href="{% url 'dashboard_resource_edit' resource.id %}" class="text-blue-400 hover:text-blue-300">Edit</a>
+                        <a href="{% url 'dashboard_resource_delete' resource.id %}" class="text-red-400 hover:text-red-300">Delete</a>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="px-6 py-8 text-center">No resources found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

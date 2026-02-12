@@ -1,0 +1,42 @@
+{% extends 'dashboard/base.html' %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold">{{ title }}</h2>
+        <a href="{% url 'dashboard_resources' %}" class="text-gray-400 hover:text-white">Cancel</a>
+    </div>
+
+    <div class="bg-card rounded-lg border border-gray-700 p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                {% for field in form %}
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">{{ field.label }}</label>
+                    <div class="flex items-center">
+                        {{ field }}
+                        {% if field.name == 'is_active' %}
+                        <span class="ml-2 text-sm text-gray-400">Enable this source</span>
+                        {% endif %}
+                    </div>
+                    {% if field.help_text %}
+                    <p class="text-xs text-gray-500 mt-1">{{ field.help_text }}</p>
+                    {% endif %}
+                    {% if field.errors %}
+                    <p class="text-xs text-red-500 mt-1">{{ field.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="mt-8 pt-6 border-t border-gray-700 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition">
+                    Save Resource
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django import forms
 from apps.videos.models import Video, Category
+from apps.importer.models import Resource
 
 class VideoForm(forms.ModelForm):
     class Meta:
@@ -20,4 +21,14 @@ class CategoryForm(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'class': 'w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500'}),
             'external_id': forms.NumberInput(attrs={'class': 'w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500'}),
+        }
+
+class ResourceForm(forms.ModelForm):
+    class Meta:
+        model = Resource
+        fields = ['name', 'url', 'is_active']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500'}),
+            'url': forms.URLInput(attrs={'class': 'w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-white focus:outline-none focus:border-blue-500'}),
+            'is_active': forms.CheckboxInput(attrs={'class': 'h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded'}),
         }
